@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CRUD Produtos</title>
+  <link rel="stylesheet" href="css.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+  <header>
+    <h1>CRUD de Produtos</h1>
+    <button id="themeToggle">🌙 Alternar Tema</button>
+  </header>
+
+  <main class="container">
+
+    <!-- DASHBOARD -->
+    <section class="dashboard">
+      <h2>📊 Dashboard</h2>
+
+      <div class="cards">
+        <div class="card">
+          <h3>Total Produtos</h3>
+          <p id="totalProdutos">0</p>
+        </div>
+
+        <div class="card">
+          <h3>Total Estoque</h3>
+          <p id="totalEstoque">0</p>
+        </div>
+
+        <div class="card">
+          <h3>Valor Total</h3>
+          <p id="valorTotal">R$ 0,00</p>
+        </div>
+      </div>
+
+      <div class="charts">
+        <canvas id="chartCategorias"></canvas>
+      </div>
+    </section>
+
+    <!-- FORM -->
+    <section class="form-section">
+      <h2>📦 Cadastro de Produto</h2>
+
+      <form id="productForm">
+        <input type="hidden" id="productId" />
+
+        <input type="text" id="name" placeholder="Nome do produto" required />
+        <input type="text" id="category" placeholder="Categoria" required />
+        <input type="number" id="price" placeholder="Preço (R$)" required />
+        <input type="number" id="stock" placeholder="Estoque" required />
+
+        <button type="submit" id="btnSubmit">Adicionar Produto</button>
+        <button type="button" id="btnCancel" class="cancel-btn">Cancelar</button>
+      </form>
+    </section>
+
+    <!-- ACTIONS -->
+    <section class="actions">
+      <input type="text" id="search" placeholder="Buscar produto..." />
+
+      <select id="sort">
+        <option value="">Ordenar por...</option>
+        <option value="name">Nome</option>
+        <option value="price">Preço</option>
+        <option value="category">Categoria</option>
+      </select>
+
+      <button id="exportJson">📤 Exportar JSON</button>
+      <button id="exportExcel">📊 Exportar Excel</button>
+
+      <input type="file" id="importJson" accept=".json" />
+    </section>
+
+    <!-- TABLE -->
+    <section>
+      <h2>📋 Lista de Produtos</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Preço</th>
+            <th>Categoria</th>
+            <th>Estoque</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="productList"></tbody>
+      </table>
+
+      <!-- PAGINATION -->
+      <div class="pagination">
+        <button id="prevPage">⬅️ Anterior</button>
+        <span id="pageInfo">Página 1</span>
+        <button id="nextPage">Próximo ➡️</button>
+
+        <select id="itemsPerPage">
+          <option value="5">5 por página</option>
+          <option value="10" selected>10 por página</option>
+          <option value="20">20 por página</option>
+        </select>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h3 id="modalTitle">Confirmação</h3>
+      <p id="modalMessage">Deseja continuar?</p>
+      <div class="modal-buttons">
+        <button id="modalConfirm">Confirmar</button>
+        <button id="modalCancel">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
