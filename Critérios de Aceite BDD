@@ -1,0 +1,139 @@
+Feature: API CRUD de Produtos (Node.js + Express + MySQL)
+  Como usuário do sistema
+  Eu quero gerenciar produtos via API REST
+  Para manter os dados armazenados no banco MySQL
+
+  Background:
+    Given que a API está rodando em "http://localhost:3000"
+    And que o banco de dados MySQL está configurado e conectado
+    And que a tabela "products" existe no banco de dados
+
+  # ======================================================
+  # LISTAGEM DE PRODUTOS
+  # ======================================================
+  Scenario: Listar todos os produtos cadastrados
+    Given que existem produtos cadastrados no banco MySQL
+    When o cliente enviar uma requisição GET para "/products"
+    Then a API deve retornar o status code 200
+    And a resposta deve conter uma lista de produtos em formato JSON
+
+  Scenario: Listar produtos quando não existem registros
+    Given que não existem produtos cadastrados no banco MySQL
+    When o cliente enviar uma requisição GET para "/products"
+    Then a API deve retornar o status code 200
+    And a resposta deve conter uma lista vazia
+
+  # ======================================================
+  # BUSCAR PRODUTO POR ID
+  # ======================================================
+  Scenario: Buscar um produto existente pelo ID
+    Given que existe um produto cadastrado com id 1
+    When o cliente enviar uma requisição GET para "/products/1"
+    Then a API deve retornar o status code 200
+    And a resposta deve conter os dados do produto em formato JSON
+    And o campo "id" deve ser igual a 1
+
+  Scenario: Buscar um produto inexistente pelo ID
+    Given que não existe um produto cadastrado com id 999
+    When o cliente enviar uma requisição GET para "/products/999"
+    Then a API deve retornar o status code 404
+    And a resposta deve conter a mensagem "Produto não encontrado"
+
+  # ======================================================
+  # CADASTRAR PRODUTO
+  # ======================================================
+  Scenario: Cadastrar um novo produto com sucesso
+    Given que o cliente possui os dados válidos de produto
+      | name     | category     | price | stock |
+      | Notebook | Eletrônicos  | 4500  | 10    |
+    When o cliente enviar uma requisição POST para "/products"
+    Then a API deve retornar o status code 201
+    And a resposta deve conter o produto cadastrado
+    And o produto deve ser persistido no banco MySQL
+
+  Scenario: Tentar cadastrar produto com campos vazios
+    Given que o cliente envia um corpo JSON inválido
+      | name | category | price | stock |
+      |      |          |       |       |
+    When o cliente enviar uma requisição POST para "/products"
+    Then a API deve retornar o status code 400
+    And a resposta deve conter a mensagem "Dados inválidos"
+
+  Scenario: Tentar cadastrar produto com preço inválido
+    Given que o cliente envia um produto com preço menor ou igual a zero
+      | name  | category    | price | stock |
+      | Mouse | Periféricos | 0     | 5     |
+    When o cliente enviar uma requisição POST para "/products"
+    Then a API deve retornar o status code 400
+    And a resposta deve conter a mensagem "Preço inválido"
+
+  Scenario: Tentar cadastrar produto com estoque negativo
+    Given que o cliente envia um produto com estoque negativo
+      | name    | category    | price | stock |
+      | Teclado | Periféricos | 200   | -1    |
+    When o cliente enviar uma requisição POST para "/products"
+    Then a API deve retornar o status code 400
+    And a resposta deve conter a mensagem "Estoque inválido"
+
+  # ======================================================
+  # ATUALIZAR PRODUTO
+  # ======================================================
+  Scenario: Atualizar um produto existente com sucesso
+    Given que existe um produto cadastrado com id 2
+    And que o cliente deseja atualizar os dados do produto
+      | name          | category    | price | stock |
+      | Teclado Mecânico | Periféricos | 350   | 15    |
+    When o cliente enviar uma requisição PUT para "/products/2"
+    Then a API deve retornar o status code 200
+    And a resposta deve conter o produto atualizado
+    And os dados devem ser atualizados no banco MySQL
+
+  Scenario: Tentar atualizar um produto inexistente
+    Given que não existe um produto cadastrado com id 999
+    When o cliente enviar uma requisição PUT para "/products/999"
+    Then a API deve retornar o status code 404
+    And a resposta deve conter a mensagem "Produto não encontrado"
+
+  Scenario: Tentar atualizar produto com dados inválidos
+    Given que existe um produto cadastrado com id 3
+    And que o cliente envia dados inválidos
+      | name | category | price | stock |
+      |      |          | -10   | -5    |
+    When o cliente enviar uma requisição PUT para "/products/3"
+    Then a API deve retornar o status code 400
+    And a resposta deve conter a mensagem "Dados inválidos"
+
+  # ======================================================
+  # EXCLUIR PRODUTO
+  # ======================================================
+  Scenario: Excluir um produto existente com sucesso
+    Given que existe um produto cadastrado com id 4
+    When o cliente enviar uma requisição DELETE para "/products/4"
+    Then a API deve retornar o status code 200
+    And a resposta deve conter a mensagem "Produto removido com sucesso"
+    And o produto deve ser removido do banco MySQL
+
+  Scenario: Tentar excluir um produto inexistente
+    Given que não existe um produto cadastrado com id 999
+    When o cliente enviar uma requisição DELETE para "/products/999"
+    Then a API deve retornar o status code 404
+    And a resposta deve conter a mensagem "Produto não encontrado"
+
+  # ======================================================
+  # VALIDAÇÃO DE INTEGRIDADE DO BANCO
+  # ======================================================
+  Scenario: Garantir que produtos persistidos retornam corretamente após reinício da API
+    Given que existe um produto cadastrado no banco MySQL
+    When a API for reiniciada
+    And o cliente enviar uma requisição GET para "/products"
+    Then a API deve retornar o status code 200
+    And o produto cadastrado anteriormente deve aparecer na lista
+
+  # ======================================================
+  # ERRO DE CONEXÃO COM BANCO
+  # ======================================================
+  Scenario: Retornar erro ao tentar acessar API sem conexão com o banco
+    Given que o banco MySQL está desligado ou inacessível
+    When o cliente enviar uma requisição GET para "/products"
+    Then a API deve retornar o status code 500
+    And a resposta deve conter a mensagem "Erro ao conectar no banco de dados"
